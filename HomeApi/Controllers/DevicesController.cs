@@ -27,9 +27,6 @@ namespace HomeApi.Controllers
             _mapper = mapper;
         }
         
-        /// <summary>
-        /// Просмотр списка подключенных устройств
-        /// </summary>
         [HttpGet] 
         [Route("")] 
         public async Task<IActionResult> GetDevices()
@@ -45,11 +42,7 @@ namespace HomeApi.Controllers
             return StatusCode(200, resp);
         }
         
-        // TODO: Задание: напишите запрос на удаление устройства
-        
-        /// <summary>
-        /// Добавление нового устройства
-        /// </summary>
+
         [HttpPost] 
         [Route("")] 
         public async Task<IActionResult> Add( AddDeviceRequest request )
@@ -68,9 +61,6 @@ namespace HomeApi.Controllers
             return StatusCode(201, $"Устройство {request.Name} добавлено. Идентификатор: {newDevice.Id}");
         }
         
-        /// <summary>
-        /// Обновление существующего устройства
-        /// </summary>
         [HttpPatch] 
         [Route("{id}")] 
         public async Task<IActionResult> Edit(
@@ -97,5 +87,25 @@ namespace HomeApi.Controllers
 
             return StatusCode(200, $"Устройство обновлено! Имя - {device.Name}, Серийный номер - {device.SerialNumber},  Комната подключения - {device.Room.Name}");
         }
+
+        [HttpDelete]
+        [Route("")]
+        public async Task<IActionResult> Remove(RemoveDiveceRequest request)
+        {
+            var device = await _devices.GetDeviceByName(request.Name);
+            if (device == null)
+                return StatusCode(400, $"Ошибка: Устройство {request.Name} не существует.");
+            else if (device.Manufacturer != request.Manufacturer)
+                return StatusCode(400, $"Ошибка: Производитель {request.Manufacturer} не совпадает.");
+            else if (device.Model != request.Model)
+                return StatusCode(400, $"Ошибка: Модель {request.Model} не совпадает.");
+            else if (device.SerialNumber != request.SerialNumber)
+                return StatusCode(400, $"Ошибка: Серийный номер {request.SerialNumber} не совпадает.");
+
+            await _devices.DeleteDevice(device);
+
+            return StatusCode(200, $"Устройство {request.Name} удалено. Идентификатор: {device.Id}");
+        }
+
     }
 }
